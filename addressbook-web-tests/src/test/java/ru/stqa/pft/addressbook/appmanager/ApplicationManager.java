@@ -1,47 +1,45 @@
+package ru.stqa.pft.addressbook.appmanager;
 
-package ru.stqa.pft.addressbook;
-
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.Test;
+import ru.stqa.pft.addressbook.model.ContactData;
 
 import java.util.concurrent.TimeUnit;
 
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.*;
-
-public class ContactCreationTests {
+public class ApplicationManager {
   WebDriver wd;
 
-  @BeforeMethod
-  public void setUp() throws Exception {
+  private GroupHelper groupHelper;
+
+  public static boolean isAlertPresent(WebDriver wd) {
+    try {
+      wd.switchTo().alert();
+      return true;
+    } catch (NoAlertPresentException e) {
+      return false;
+    }
+  }
+
+  public void init() {
     wd = new ChromeDriver();
-    wd.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+    wd.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
     wd.get("http://localhost/addressbook/");
+    groupHelper = new GroupHelper(wd);
+
     login("admin", "secret");
   }
 
-  @Test
-  public void ConatctCreationTests() {
-    gotoHomePage();
-    initAddNewContact();
-    fillContactForm(
-            new ContactData("Ivan", "Nya", "Meshcheriyakov", "Meepo", "Msk", "8999", "8999", "8999", "9", "inams@majds.ru", "9"));
-    submitContactCreation();
-    gotoHomePage();
-  }
-
-  private void gotoHomePage() {
+  public void gotoHomePage() {
     wd.findElement(By.linkText("home")).click();
   }
 
-  private void submitContactCreation() {
+  public void submitContactCreation() {
     wd.findElement(By.xpath("//div[@id='content']/form/input[21]")).click();
   }
 
-  private void fillContactForm(ContactData contactData) {
+  public void fillContactForm(ContactData contactData) {
     wd.findElement(By.name("firstname")).click();
     wd.findElement(By.name("firstname")).clear();
     wd.findElement(By.name("firstname")).sendKeys(contactData.getName());
@@ -75,11 +73,11 @@ public class ContactCreationTests {
     wd.findElement(By.name("email2")).sendKeys(contactData.getEmail2());
   }
 
-  private void initAddNewContact() {
+  public void initAddNewContact() {
     wd.findElement(By.linkText("add new")).click();
   }
 
-  private void login(String username, String password) {
+  public void login(String username, String password) {
     wd.findElement(By.name("user")).click();
     wd.findElement(By.name("user")).click();
     wd.findElement(By.name("user")).clear();
@@ -90,17 +88,11 @@ public class ContactCreationTests {
     wd.findElement(By.xpath("//form[@id='LoginForm']/input[3]")).click();
   }
 
-  @AfterMethod
-  public void tearDown() {
+  public void stop() {
     wd.quit();
   }
 
-  public static boolean isAlertPresent(FirefoxDriver wd) {
-    try {
-      wd.switchTo().alert();
-      return true;
-    } catch (NoAlertPresentException e) {
-      return false;
-    }
+  public GroupHelper getGroupHelper() {
+    return groupHelper;
   }
 }
